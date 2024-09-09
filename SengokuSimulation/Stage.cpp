@@ -94,10 +94,6 @@ void DrawScreen(Stage* stage, DrawMode mode, int turn)
 
 	PrintCursor(1, 1); printf("%4dねん", stage->year);
 	for (int i = 0; i < stage->castlesSize; i++) {
-		// (城ID)i から Castle* を取得して
-		// 城の curx, cury owner, troopCount, mapName を取得します
-		// (curx,cury)の位置に (id)(城のマップ名)(troopCount値) を表示します
-		// (curx,cury+1)の位置に (城主のマップ名) を表示します
 		Castle* castle = GetCastle(stage, (CastleId)i);
 		int curx = GetCastleCurx(castle);
 		int cury = GetCastleCury(castle);
@@ -118,11 +114,9 @@ void MakeTurnOrder(Stage* stage)
 	for (int i = 0; i < stage->castlesSize; i++) {
 		turnOrder[i] = (CastleId)i;
 	}
-	// turnOrderを走査(ループ変数i)して、
-	// 0～castleSize-1 の乱数 j を出して
-	// turnOrder[i] と turnOrder[j] を交換します
 	for (int i = 0; i < stage->castlesSize; i++) {
 		int j = GetRand(stage->castlesSize);
+		// turnOrder[i]とturnOrder[j]をスワップ
 		CastleId tmp = turnOrder[i];
 		turnOrder[i] = turnOrder[j];
 		turnOrder[j] = tmp;
@@ -356,13 +350,11 @@ static void SiegeBattle(Stage* stage, LordId offenseLord, int offenseTroopCount,
 // 任意のownerの城を数える
 static int getCastleCount(Stage* stage, LordId lord)
 {
-	// stage->castles[] を走査して、
-	// owner がlord であるものをカウントします
 	int castleCount = 0;
 	for (int i = 0; i < stage->castlesSize; i++) {
-		LordId owner = GetCastleOwner(stage, (CastleId)i);
-		if (owner == lord) {
-			castleCount;
+		Castle* castle = GetCastle(stage, (CastleId)i);
+		if (castle->owner == lord) {
+			castleCount++;
 		}
 	}
 	return castleCount;
@@ -371,56 +363,42 @@ static int getCastleCount(Stage* stage, LordId lord)
 // 城の名前を得る
 const char* GetCastleName(Stage* stage, CastleId id)
 {
-	// id => Castleポインター取得して 
-	// GetCastleName()を呼びます
 	Castle* castle = GetCastle(stage, id);
 	return GetCastleName(castle);
 }
 // 城の城主を取得
 LordId GetCastleOwner(Stage* stage, CastleId id)
 {
-	// id => Castleポインター取得して 
-	// GetCastleOwner()を呼びます
 	Castle* castle = GetCastle(stage, id);
 	return GetCastleOwner(castle);
 }
 // 城の城主をセット
 void SetCastleOwner(Stage* stage, CastleId id, LordId owner)
 {
-	// id => Castleポインター取得して 
-	// SetCastleOwner()を呼びます
 	Castle* castle = GetCastle(stage, id);
-    SetCastleOwner(castle,owner);
+	SetCastleOwner(castle, owner);
 }
 // 兵数を得る
 int GetCastleTroopCount(Stage* stage, CastleId id)
 {
-	// id => Castleポインター取得して 
-	// GetCastleTroopCount()を呼びます
 	Castle* castle = GetCastle(stage, id);
 	return GetCastleTroopCount(castle);
 }
 // 兵数をセット
 void SetCastleTroopCount(Stage* stage, CastleId id, int troopCount)
 {
-	// id => Castleポインター取得して 
-	// SetCastleTroopCount()を呼びます
 	Castle* castle = GetCastle(stage, id);
 	SetCastleTroopCount(castle, troopCount);
 }
 // 城の近隣リストを取得
 CastleId* GetCastleConnectedList(Stage* stage, CastleId id)
 {
-	// id => Castleポインター取得して 
-	// SetCastleConnectedList()を呼びます
 	Castle* castle = GetCastle(stage, id);
 	return GetCastleConnectedList(castle);
 }
 // 城のマップ名を取得
 const char* GetCastleMapName(Stage* stage, CastleId id)
 {
-	// id => Castleポインター取得して 
-	// GetCastleMapName()を呼びます
 	Castle* castle = GetCastle(stage, id);
 	return GetCastleMapName(castle);
 }
@@ -428,31 +406,24 @@ const char* GetCastleMapName(Stage* stage, CastleId id)
 static Castle* GetCastle(Stage* stage, CastleId id)
 {
 	assert(0 <= id && id < stage->castlesSize);
-	// id => Castleポインター取得します 
 	return &stage->castles[id];
 }
 //--------------------------------------
 // 城主の名を取得
 const char* GetLordFirstName(Stage* stage, LordId id)
 {
-	// chnageLordId()で id 変更した後、
-	// GetLordFirstName()を呼びます
 	id = changeLordId(stage, id);
 	return GetLordFirstName(id);
 }
 // 城主の姓を取得
 const char* GetLordFamilyName(Stage* stage, LordId id)
 {
-	// chnageLordId()で id 変更した後、
-	// GetLordFamilyName()を呼びます
 	id = changeLordId(stage, id);
 	return GetLordFamilyName(id);
 }
 // 城主のマップ上の名前を取得
 const char* GetLordMapName(Stage* stage, LordId id)
 {
-	// chnageLordId()で id 変更した後、
-	// GetLordMapName()を呼びます
 	id = changeLordId(stage, id);
 	return GetLordMapName(id);
 }
@@ -460,7 +431,6 @@ const char* GetLordMapName(Stage* stage, LordId id)
 static LordId changeLordId(Stage* stage, LordId id)
 {
 	// 「本能寺の変」後は、織田信長=>羽柴秀吉
-	// isHonnojiEventが立っていたら 織田信長のidなら>羽柴秀吉に変えてください
 	if (id == LORD_ODA && stage->isHonnojiEvent) {
 		id = LORD_HASHIBA;
 	}
